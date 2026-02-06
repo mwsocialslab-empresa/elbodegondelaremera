@@ -1,13 +1,25 @@
-/* Configuración General */
+/* =========================================
+   1. CONFIGURACIÓN GENERAL Y FUENTES
+   ========================================= */
 * { 
     font-family: 'Roboto Condensed', sans-serif !important; 
+    box-sizing: border-box;
 }
 
 body {
     background-color: #f8f9fa;
+    color: #333;
+    transition: overflow 0.3s;
 }
 
-/* Header & Nav */
+/* Bloquear scroll cuando el nav móvil está abierto */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* =========================================
+   2. HEADER, NAV Y MENÚ MÓVIL
+   ========================================= */
 .marca { 
     font-size: 1.5rem; 
     letter-spacing: 2px; 
@@ -18,13 +30,32 @@ body {
     border: none;
     background: none;
     transition: transform 0.2s;
+    position: relative;
 }
 
 .btn-cart-nav:hover {
     transform: scale(1.1);
 }
 
-/* Hero Section */
+/* Overlay para cerrar el menú al tocar fuera */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1040;
+    display: none;
+}
+
+.menu-overlay.show {
+    display: block;
+}
+
+/* =========================================
+   3. HERO SECTION
+   ========================================= */
 .hero-section {
     background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
                 url('https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80');
@@ -32,13 +63,25 @@ body {
     background-position: center;
     height: 60vh;
     margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
 }
 
-/* Tarjetas de Producto Modernas */
+/* =========================================
+   4. TARJETAS DE PRODUCTO (CATÁLOGO)
+   ========================================= */
 .producto-card {
-    transition: all 0.3s ease;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border-radius: 15px;
     overflow: hidden;
+    background: white;
 }
 
 .producto-card:hover {
@@ -46,67 +89,110 @@ body {
     transform: translateY(-5px);
 }
 
-.img-producto {
-    height: 250px; /* Altura fija para que todas las fotos queden iguales */
-    object-fit: cover; /* Recorta la imagen para llenar el espacio sin deformar */
+/* Mantener proporción cuadrada en imágenes */
+.producto-card .position-relative {
+    aspect-ratio: 1 / 1; 
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.producto-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.5s ease;
 }
 
-.producto-card:hover .img-producto {
-    transform: scale(1.1);
+.producto-card:hover img {
+    transform: scale(1.05);
 }
 
-/* Badge de Oferta */
-.badge-oferta {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #ff3e3e;
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+/* Títulos alineados (Max 2 líneas) */
+.producto-card h6 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.4em; 
+    line-height: 1.2em;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.producto-card .card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem !important;
+}
+
+/* =========================================
+   5. VISTA DE DETALLE Y SELECTORES
+   ========================================= */
+.contenedor-zoom {
+    overflow: hidden;
+    cursor: crosshair;
+    border-radius: 12px;
+}
+
+.contenedor-zoom img {
+    transition: transform 0.5s ease;
+}
+
+.contenedor-zoom:hover img {
+    transform: scale(1.2);
+}
+
+/* Botones de talle cuadrados */
+.btn-talle-selector {
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #333;
+    border-radius: 5px;
+    background: white;
+    color: #333;
     font-weight: bold;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 8px;
+    margin-bottom: 8px;
 }
 
-/* Botones */
-.btn-primary { 
+.btn-talle-selector.active {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #000 !important;
+}
+
+.btn-talle-selector:hover:not(.active) {
+    background-color: #f0f0f0;
+}
+
+/* =========================================
+   6. COMPONENTES DE INTERFAZ (BOTONES, MODALES)
+   ========================================= */
+.btn-primary, .btn-dark { 
     background-color: #000; 
     border: none; 
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.3s;
 }
 
-.btn-primary:hover { 
+.btn-primary:hover, .btn-dark:hover { 
     background-color: #333; 
 }
 
-.btn-dark {
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-/* Carrito Modal */
-.scroll-carrito {
-    max-height: 40vh;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.scroll-carrito::-webkit-scrollbar {
-    width: 5px;
-}
-
-.scroll-carrito::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 10px;
-}
-/*modal */
-/* Estilos para los Inputs del Modal */
+/* Inputs del Modal */
 .form-control-lg {
     font-size: 0.95rem;
     border-radius: 10px;
-    transition: all 0.3s border-color;
 }
 
 .form-control:focus {
@@ -114,61 +200,18 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Animación para cuando falta un campo (Shake) */
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+.scroll-carrito {
+    max-height: 45vh;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
-.campo-error {
-    border-color: #dc3545 !important;
-    animation: shake 0.2s ease-in-out 0s 2;
-}
+.scroll-carrito::-webkit-scrollbar { width: 5px; }
+.scroll-carrito::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
 
-.form-label {
-    color: #555;
-    margin-bottom: 0.3rem;
-}
-/* Clase que se aplicará cuando falte un dato */
-.is-invalid-custom {
-    border: 2px solid #dc3545 !important;
-    animation: shake 0.3s ease-in-out;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    50% { transform: translateX(8px); }
-    75% { transform: translateX(-4px); }
-}
-
-/* Estilo para el mensaje de error debajo del input */
-.error-feedback {
-    color: #dc3545;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin-top: 4px;
-    display: none; /* Se activa con JS */
-}
-.custom-toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #1a1a1a;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    z-index: 11000;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-.custom-toast.show {
-    transform: translateX(-50%) translateY(0);
-}
-/* Efecto de sacudida y borde rojo para campos vacíos */
+/* =========================================
+   7. VALIDACIONES Y FEEDBACK (TOAST/SHAKE)
+   ========================================= */
 .is-invalid-custom {
     border: 2px solid #ff4d4d !important;
     background-color: #fff5f5 !important;
@@ -182,7 +225,6 @@ body {
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-/* Toast Minimalista */
 .custom-toast {
     position: fixed;
     bottom: 30px;
@@ -194,7 +236,7 @@ body {
     border-radius: 50px;
     font-weight: 500;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    z-index: 10000;
+    z-index: 11000;
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     opacity: 0;
 }
@@ -203,26 +245,12 @@ body {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
 }
-.contenedor-zoom {
-    overflow: hidden;
-    cursor: crosshair;
-    border-radius: 12px;
-}
 
-.contenedor-zoom img {
-    transition: transform 0.5s ease;
-}
-
-.contenedor-zoom:hover img {
-    transform: scale(1.5); /* Ajusta el nivel de zoom aquí */
-}
-
-/* Tarjeta corta del catálogo */
-.producto-card {
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.producto-card:hover {
-    transform: translateY(-5px);
+/* =========================================
+   8. AJUSTES RESPONSIVOS
+   ========================================= */
+@media (max-width: 768px) {
+    .hero-section { height: 45vh; }
+    .marca { font-size: 1.2rem; }
+    .btn-talle-selector { width: 40px; height: 40px; }
 }
