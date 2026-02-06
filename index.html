@@ -8,6 +8,39 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos para la nueva Vista de Detalle */
+        .contenedor-zoom {
+            overflow: hidden;
+            border-radius: 15px;
+            cursor: crosshair;
+            background: #f8f9fa;
+        }
+        .contenedor-zoom img {
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: auto;
+        }
+        .contenedor-zoom:hover img {
+            transform: scale(1.5);
+        }
+        .producto-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .producto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        #vista-detalle {
+            min-height: 80vh;
+        }
+        .badge-talle {
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
 
@@ -17,14 +50,13 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-3">
     <div class="container">
-        <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="#" onclick="volverAlCatalogo()">
             <span class="marca">STYLE<span class="text-primary">ON</span></span>
         </a>
 
         <div class="d-flex order-lg-last ms-2">
             <button class="btn btn-cart-nav position-relative" data-bs-toggle="modal" data-bs-target="#modalCarrito">
                 <span class="fs-4"><i class="bi bi-cart4"></i></span>
-                
                 <span id="contadorNav" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" style="display:none">0</span>
             </button>
             <button class="navbar-toggler border-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav">
@@ -34,26 +66,25 @@
 
         <div class="collapse navbar-collapse" id="menuNav">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('todos'); cerrarMenuMobile();">Todas</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('remeras'); cerrarMenuMobile();">Remeras</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('buzos'); cerrarMenuMobile();">Buzos</a></li>
-                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('accesorios'); cerrarMenuMobile();">Accesorios</a></li>
-                
-                <li class="nav-item"><a href="#" class="nav-link px-3 text-danger fw-bold" onclick="filtrar('ofertas'); cerrarMenuMobile();">OFERTAS</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="volverAlCatalogo(); filtrar('todos'); cerrarMenuMobile();">Todas</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="volverAlCatalogo(); filtrar('remeras'); cerrarMenuMobile();">Remeras</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="volverAlCatalogo(); filtrar('buzos'); cerrarMenuMobile();">Buzos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="volverAlCatalogo(); filtrar('accesorios'); cerrarMenuMobile();">Accesorios</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3 text-danger fw-bold" onclick="volverAlCatalogo(); filtrar('ofertas'); cerrarMenuMobile();">OFERTAS</a></li>
             </ul>
         </div>
     </div>
 </nav>
 
-<section class="hero-section text-center d-flex align-items-center justify-content-center text-white">
+<section id="hero" class="hero-section text-center d-flex align-items-center justify-content-center text-white">
     <div class="container">
         <h1 class="display-3 fw-bold">NUEVA COLECCIÓN</h1>
         <p class="lead">Llevá tu estilo al siguiente nivel con nuestras remeras.</p>
-        <a href="#productos" class="btn btn-primary btn-lg px-5 rounded-pill">Ver Catálogo</a>
+        <a href="#productos-section" class="btn btn-primary btn-lg px-5 rounded-pill">Ver Catálogo</a>
     </div>
 </section>
 
-<main class="container my-5" id="productos-section">
+<main class="container my-5" id="contenedor-catalogo">
     <h2 class="text-center mb-4 fw-bold">Nuestros Productos</h2>
     <div id="productos" class="row g-4">
         <div class="text-center py-5">
@@ -63,44 +94,96 @@
     </div>
 </main>
 
+<section id="vista-detalle" class="container my-5 d-none">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <button class="btn btn-link text-dark p-0 text-decoration-none fw-bold" onclick="volverAlCatalogo()">
+            <i class="bi bi-arrow-left"></i> VOLVER AL CATÁLOGO
+        </button>
+    </nav>
+
+    <div class="row gx-lg-5">
+        <div class="col-12 col-md-5 mb-4">
+            <div class="contenedor-zoom shadow-sm">
+                <img id="detalle-img" src="" alt="Producto">
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3 mb-4 border-end">
+            <h2 id="detalle-nombre" class="fw-bold mb-2"></h2>
+            <div id="detalle-precio" class="display-6 fw-bold text-primary mb-4"></div>
+            
+            <div class="mb-4">
+                <label for="detalle-talle" class="d-block fw-bold text-uppercase small mb-2 text-muted">Elegir Talle</label>
+                <div id="detalle-talle">
+                    </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="d-block fw-bold text-uppercase small mb-2 text-muted">Cantidad</label>
+                <div class="input-group input-group-lg w-100">
+                    <button class="btn btn-outline-dark" onclick="cambiarCantidadDetalle(-1)">-</button>
+                    <input id="cant-detalle" type="text" class="form-control text-center bg-white" value="1" readonly>
+                    <button class="btn btn-outline-dark" onclick="cambiarCantidadDetalle(1)">+</button>
+                </div>
+            </div>
+
+            <button id="btn-agregar-detalle" class="btn btn-dark w-100 py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2">
+                AÑADIR AL CARRITO <i class="bi bi-bag-plus"></i>
+            </button>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="p-3 bg-light rounded-4 h-100">
+                <h5 class="fw-bold text-uppercase small mb-3 border-bottom pb-2">Información del Producto</h5>
+                <p id="detalle-descripcion" class="text-muted" style="line-height: 1.6;"></p>
+                <div class="mt-4 small">
+                    <p class="mb-1"><i class="bi bi-truck text-primary me-2"></i> Envío a todo el país</p>
+                    <p class="mb-1"><i class="bi bi-shield-check text-primary me-2"></i> Calidad Premium 100% Algodón</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="modal fade" id="modalCarrito" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Tu Carrito<i class="bi bi-cart4"></i> </h5>
+                <h5 class="modal-title fw-bold">Tu Carrito <i class="bi bi-cart4"></i></h5>
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-                <div class="modal-body">
-    <div id="listaModal" class="mb-4 scroll-carrito"></div>
+            <div class="modal-body">
+                <div id="listaModal" class="mb-4" style="max-height: 400px; overflow-y: auto;"></div>
 
-    <div class="p-3 bg-light rounded-3 mb-4 border">
-        <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted">Total a pagar:</span>
-            <h4 class="mb-0 text-dark fw-bold">$<span id="totalModal">0</span></h4>
-        </div>
-    </div>
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Total a pagar:</span>
+                        <h4 class="mb-0 text-dark fw-bold">$<span id="totalModal">0</span></h4>
+                    </div>
+                </div>
 
-    <div class="form-envio">
-        <h6 class="fw-bold mb-3 text-uppercase small" style="letter-spacing: 1px;">Datos de Entrega</h6>
-        <div class="mb-3">
-            <label class="form-label small fw-bold">Nombre Completo</label>
-            <input type="text" id="nombreCliente" class="form-control form-control-lg border-2" placeholder="Ej: Juan Pérez">
-        </div>
-        <div class="mb-3">
-            <label class="form-label small fw-bold">WhatsApp / Teléfono</label>
-            <input type="tel" id="telefonoCliente" class="form-control form-control-lg border-2" placeholder="Ej: 11 1234 5678">
-        </div>
-        <div class="mb-4">
-            <label class="form-label small fw-bold">Dirección de Envío</label>
-            <input type="text" id="direccionModal" class="form-control form-control-lg border-2" placeholder="Calle, Número, Localidad">
-        </div>
-    </div>
+                <div class="form-envio">
+                    <h6 class="fw-bold mb-3 text-uppercase small">Datos de Entrega</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Nombre Completo</label>
+                            <input type="text" id="nombreCliente" class="form-control border-2">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">WhatsApp</label>
+                            <input type="tel" id="telefonoCliente" class="form-control border-2">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Dirección de Envío</label>
+                        <input type="text" id="direccionModal" class="form-control border-2">
+                    </div>
+                </div>
 
-    <button class="btn btn-dark w-100 py-3 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="enviarPedidoWhatsApp()">
-        <span>FINALIZAR COMPRA POR WHATSAPP</span>
-        <span class="fs-5"><i class="bi bi-whatsapp"></i></span>
-    </button>
-</div>
+                <button class="btn btn-dark w-100 py-3 fw-bold rounded-pill d-flex align-items-center justify-content-center gap-2" onclick="enviarPedidoWhatsApp()">
+                    FINALIZAR COMPRA POR WHATSAPP <i class="bi bi-whatsapp"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>

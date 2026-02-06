@@ -203,3 +203,26 @@ body {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
 }
+.contenedor-zoom {
+    overflow: hidden;
+    cursor: crosshair;
+    border-radius: 12px;
+}
+
+.contenedor-zoom img {
+    transition: transform 0.5s ease;
+}
+
+.contenedor-zoom:hover img {
+    transform: scale(1.5); /* Ajusta el nivel de zoom aquí */
+}
+
+/* Tarjeta corta del catálogo */
+.producto-card {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.producto-card:hover {
+    transform: translateY(-5px);
+}
