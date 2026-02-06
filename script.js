@@ -186,12 +186,24 @@ function intentarAbrirCarrito() {
     new bootstrap.Modal(document.getElementById('modalCarrito')).show();
 }
 
-function mostrarToast(msj) {
-    const t = document.createElement('div');
-    t.className = "custom-toast"; t.innerText = msj;
-    document.body.appendChild(t);
-    setTimeout(() => t.classList.add('show'), 10);
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3000);
+function mostrarToast(mensaje) {
+    // Eliminar toast anterior si existe para que no se encimen
+    const toastExistente = document.querySelector('.custom-toast');
+    if (toastExistente) toastExistente.remove();
+
+    const toast = document.createElement('div');
+    toast.className = "custom-toast";
+    toast.innerHTML = mensaje; // Usamos innerHTML por si quieres poner iconos
+    document.body.appendChild(toast);
+
+    // Pequeño delay para que la animación funcione
+    setTimeout(() => toast.classList.add('show'), 50);
+
+    // Desaparecer después de 3 segundos
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
 }
 
 function inicializarEventosMenu() {
@@ -214,20 +226,134 @@ function inicializarEventosMenu() {
 }
 
 function enviarPedidoWhatsApp() {
-    const nom = document.getElementById('nombreCliente'), tel = document.getElementById('telefonoCliente'), dir = document.getElementById('direccionModal');
-    if (!nom.value || !tel.value || !dir.value) return mostrarToast("⚠️ Completa los datos");
+    const inputNombre = document.getElementById('nombreCliente');
+    const inputTelefono = document.getElementById('telefonoCliente');
+    const inputDireccion = document.getElementById('direccionModal');
+    
+    // 1. VALIDACIÓN DE CAMPOS (RESALTE EN ROJO)
+    const campos = [inputNombre, inputTelefono, inputDireccion];
+    let faltaDato = false;
 
-    let detalle = "", total = 0;
-    carrito.forEach(p => {
-        detalle += `${p.cantidad}x ${p.nombre} (${p.talle}), `;
-        total += p.precio * p.cantidad;
+    campos.forEach(campo => {
+        // Quitamos el error previo si existe
+        campo.classList.remove('is-invalid-custom');
+        
+        if (!campo.value.trim()) {
+            campo.classList.add('is-invalid-custom'); // Agrega borde rojo y vibración
+            faltaDato = true;
+        }
+
+        // Quitar el resaltado rojo apenas el usuario empiece a escribir
+        campo.oninput = () => {
+            campo.classList.remove('is-invalid-custom');
+        };
     });
 
-    const datos = { pedido: "ST-"+Math.floor(Math.random()*9000), fecha: new Date().toLocaleString(), nombre: nom.value, telefono: tel.value, productos: detalle, total: total, direccion: dir.value };
-    fetch(URL_SHEETS, { method: 'POST', mode: 'no-cors', body: JSON.stringify(datos) });
+    if (faltaDato) {
+        mostrarToast("⚠️ Por favor, completa los campos marcados en rojo");
+        return;
+    }
 
-    const msj = `👋 Hola! Soy ${nom.value}. Pedido:\n${detalle}\n📍 Dir: ${dir.value}\n💰 Total: $${total.toLocaleString()}`;
-    window.open(`https://wa.me/5491127461954?text=${encodeURIComponent(msj)}`, '_blank');
+    // 2. VALIDACIÓN DE CARRITO VACÍO
+    if (carrito.length === 0) {
+        mostrarToast("🛒 El carrito está vacío");
+        return;
+    }
+
+    // 3. CALCULAR TOTAL Y VALIDACIÓN DE MONTO MÍNIMO
+    let totalAcumulado = 0;
+    carrito.forEach(p => totalAcumulado += (p.precio * p.cantidad));
+
+    const montoMinimo = 45000;
+    if (totalAcumulado < montoMinimo) {
+        mostrarToast(`❌ La compra mínima es de $${montoMinimo.toLocaleString()}`);
+        return;
+    }
+
+    // 4. GENERACIÓN DE NÚMERO CORRELATIVO (000-0000)
+    const numeroPedido = obtenerSiguientePedido(); 
+    const fechaPedido = new Date().toLocaleString('es-AR');
+    const aliasMP = "walter30mp";
+    const linkApp = "https://link.mercadopago.com.ar/home";
+
+    // 5. CONSTRUCCIÓN DEL MENSAJE (EMOJIS COMPATIBLES)
+    let msg = `👋 ¡Hola! Soy *${inputNombre.value.trim()}*.\n\n`;
+    msg += `📦 *PEDIDO N° ${numeroPedido}*\n`;
+    msg += `📅 ${fechaPedido}\n`;
+    msg += `--------------------------\n`;
+    
+    carrito.forEach(p => {
+        msg += `✅ ${p.cantidad}x - ${p.nombre.toUpperCase()} (${p.talle})\n`;
+    });
+    
+    msg += `--------------------------\n`;
+    msg += `📍 *Dirección:* ${inputDireccion.value.trim()}\n`;
+    msg += `💰 *Total a pagar:* $${totalAcumulado.toLocaleString()}\n\n`;
+    
+    msg += `💳 *MERCADO PAGO:*\n`;
+    msg += `📲 *TOCÁ EN "INICIAR SESIÓN"*\n`;
+    msg += `👇 Abrir App:\n${linkApp}\n\n`;
+    msg += `🔑 *Alias:* ${aliasMP}\n\n`;
+    
+    msg += `📸 *No olvides mandar el comprobante de pago*\n`;
+    msg += `🙏 ¡Muchas gracias por tu compra!`;
+
+    // 6. ENVÍO DE DATOS A GOOGLE SHEETS
+    fetch(URL_SHEETS, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            pedido: numeroPedido,
+            fecha: fechaPedido,
+            nombre: inputNombre.value.trim(),
+            telefono: inputTelefono.value.trim(),
+            productos: carrito.map(p => `${p.cantidad}x ${p.nombre} (${p.talle})`).join(", "),
+            total: totalAcumulado,
+            direccion: inputDireccion.value.trim()
+        })
+    });
+
+    // 7. GESTIÓN DEL BOTÓN Y REDIRECCIÓN
+    const whatsappUrl = `https://wa.me/5491127461954?text=${encodeURIComponent(msg)}`;
+    const btn = document.querySelector(".btn-dark[onclick='enviarPedidoWhatsApp()']");
+    
+    if(btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+    }
+
+    setTimeout(() => {
+        // Abre WhatsApp en una pestaña nueva
+        window.open(whatsappUrl, '_blank'); 
+        
+        // Limpiar estado de la tienda
+        carrito = [];
+        actualizarCarrito();
+        
+        // Cerrar el modal de compra
+        const modalElt = document.getElementById('modalCarrito');
+        const modalInst = bootstrap.Modal.getInstance(modalElt);
+        if (modalInst) modalInst.hide();
+        
+        // Restaurar el botón original
+        if(btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'FINALIZAR COMPRA POR WHATSAPP <i class="bi bi-whatsapp"></i>';
+        }
+    }, 800);
+}
+
+// FUNCIÓN AUXILIAR PARA EL CONTADOR (Por si no la tenías a mano)
+function obtenerSiguientePedido() {
+    let ultimoNum = localStorage.getItem('contadorPedido') || 0;
+    let siguienteNum = parseInt(ultimoNum) + 1;
+    localStorage.setItem('contadorPedido', siguienteNum);
+    
+    let parteIzquierda = Math.floor(siguienteNum / 10000).toString().padStart(3, '0');
+    let parteDerecha = (siguienteNum % 10000).toString().padStart(4, '0');
+    
+    return `${parteIzquierda}-${parteDerecha}`;
 }
 // --- NAVEGACIÓN Y FILTROS (VERSIÓN DEFINITIVA) ---
 function filtrar(categoria) {
@@ -310,4 +436,19 @@ function cerrarMenuMobile() {
             if(overlay) overlay.classList.remove('show');
         }
     }
+}
+function obtenerSiguientePedido() {
+    // 1. Obtener el último número guardado (o empezar en 1)
+    let ultimoNum = localStorage.getItem('contadorPedido') || 0;
+    let siguienteNum = parseInt(ultimoNum) + 1;
+    
+    // 2. Guardar el nuevo número para la próxima vez
+    localStorage.setItem('contadorPedido', siguienteNum);
+    
+    // 3. Formatear a 000-0000
+    // Dividimos por 10000 para obtener la parte izquierda y derecha
+    let parteIzquierda = Math.floor(siguienteNum / 10000).toString().padStart(3, '0');
+    let parteDerecha = (siguienteNum % 10000).toString().padStart(4, '0');
+    
+    return `${parteIzquierda}-${parteDerecha}`;
 }

@@ -203,20 +203,35 @@ body.menu-open {
     overflow-y: auto;
 }
 
+/* =========================================
+   7. VALIDACIONES Y ANIMACIONES (CORREGIDO)
+   ========================================= */
 .custom-toast {
     position: fixed;
-    bottom: 30px;
+    bottom: 40px; /* Un poco más arriba del borde */
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: #1a1a1a;
     color: #fff;
-    padding: 12px 25px;
-    border-radius: 50px;
+    padding: 15px 20px;
+    border-radius: 12px; /* Bordes menos redondeados para un look más moderno */
     z-index: 11000;
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     opacity: 0;
+    
+    /* AJUSTE DE TAMAÑO */
+    width: 80%; /* Ocupa el 80% de la pantalla */
+    max-width: 400px; /* Pero no se hace gigante en computadoras */
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
+.custom-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
 .custom-toast.show {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
@@ -231,4 +246,18 @@ body.menu-open {
     body {
         overflow-x: hidden;
     }
+}
+/* Borde rojo y fondo rosado suave para el error */
+.is-invalid-custom {
+    border: 2px solid #dc3545 !important;
+    background-color: #fff8f8 !important;
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Animación de vibración */
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
 }
