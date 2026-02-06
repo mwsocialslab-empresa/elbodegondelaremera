@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function cargarDesdeSheets() {
     fetch(URL_SHEETS, {
         method: 'GET',
-        redirect: 'follow' // <--- AGREGA ESTO
+        redirect: 'follow'
     })
     .then(r => r.json())
     .then(data => renderizarProductos(data))
@@ -78,7 +78,7 @@ function agregar(i) {
     }
 
     actualizarCarrito();
-    mostrarToast(`¡${prod.nombre} agregado!`);
+    
 }
 
 function actualizarCarrito() {
@@ -131,12 +131,32 @@ function enviarPedidoWhatsApp() {
     const inputTelefono = document.getElementById('telefonoCliente');
     const inputDireccion = document.getElementById('direccionModal');
     
-    if (carrito.length === 0) return;
-    if (!inputNombre.value || !inputTelefono.value || !inputDireccion.value) {
-        mostrarToast("Por favor completa todos los datos");
+    // Referencias para validación visual
+    const campos = [inputNombre, inputTelefono, inputDireccion];
+    let faltaDato = false;
+
+    // 1. Limpiar estados de error previos
+    campos.forEach(campo => campo.classList.remove('is-invalid-custom'));
+
+    // 2. Validación con Feedback Visual
+    if (carrito.length === 0) {
+        mostrarToast("🛒 El carrito está vacío");
         return;
     }
 
+    campos.forEach(campo => {
+        if (!campo.value.trim()) {
+            campo.classList.add('is-invalid-custom');
+            faltaDato = true;
+        }
+    });
+
+    if (faltaDato) {
+        mostrarToast("⚠️ Por favor, completa los campos marcados");
+        return;
+    }
+
+    // 3. Procesamiento del pedido (Tu lógica original)
     let detallePedido = "";
     let totalAcumulado = 0;
     carrito.forEach((p, index) => {
@@ -146,16 +166,16 @@ function enviarPedidoWhatsApp() {
     });
 
     const datosParaSheets = {
-        pedido: "ST-" + Math.floor(Math.random() * 10000),
+        pedido: "ST-" + Math.floor(1000 + Math.random() * 9000),
         fecha: new Date().toLocaleString(),
-        nombre: inputNombre.value,
-        telefono: inputTelefono.value,
+        nombre: inputNombre.value.trim(),
+        telefono: inputTelefono.value.trim(),
         productos: detallePedido,
         total: totalAcumulado,
-        direccion: inputDireccion.value
+        direccion: inputDireccion.value.trim()
     };
 
-    // USAMOS EL MÉTODO MÁS COMPATIBLE PARA EVITAR CORS EN EL POST
+    // Envío a Sheets
     fetch(URL_SHEETS, {
         method: 'POST',
         mode: 'no-cors',
@@ -164,13 +184,13 @@ function enviarPedidoWhatsApp() {
         body: JSON.stringify(datosParaSheets)
     });
 
-    // Formato solicitado
+    // Formato de mensaje solicitado
     let mensajeWA = `👋 ¡Hola! Soy ${inputNombre.value}. Quiero realizar este pedido:\n\n` +
                     `${detallePedido}\n\n` +
                     `📍 Dirección: ${inputDireccion.value}\n` +
                     `💰 Total: $${totalAcumulado.toLocaleString()}`;
 
-    // Pequeño retraso para asegurar que el fetch se dispare antes de abrir la ventana
+    // Pequeño delay para asegurar el fetch y dar feedback
     setTimeout(() => {
         const urlWA = `https://wa.me/5491127461954?text=${encodeURIComponent(mensajeWA)}`;
         window.open(urlWA, '_blank');
@@ -198,11 +218,21 @@ function cerrarMenuMobile() {
 }
 
 function mostrarToast(mensaje) {
+    // Eliminar si ya hay uno presente
+    const toastExistente = document.querySelector('.custom-toast');
+    if (toastExistente) toastExistente.remove();
+
     const toast = document.createElement('div');
-    toast.className = "position-fixed bottom-0 start-50 translate-middle-x bg-dark text-white p-2 rounded mb-5 shadow-lg";
-    toast.style.zIndex = "10000";
-    toast.style.fontSize = "14px";
+    toast.className = "custom-toast";
     toast.innerText = mensaje;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
+
+    // Activamos la animación
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Desaparece después de 3 segundos
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
 }
