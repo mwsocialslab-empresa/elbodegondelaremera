@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tienda de Remeras - StyleOn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="main-header text-white text-center py-1">
+    <p class="mb-0 small fw-bold text-danger">🔥 ENVÍOS GRATIS EN COMPRAS SUPERIORES A $50.000</p>
+</header>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+            <span class="marca">STYLE<span class="text-primary">ON</span></span>
+        </a>
+
+        <div class="d-flex order-lg-last ms-2">
+            <button class="btn btn-cart-nav position-relative" data-bs-toggle="modal" data-bs-target="#modalCarrito">
+                <span class="fs-4"><i class="bi bi-cart4"></i></span>
+                
+                <span id="contadorNav" class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle" style="display:none">0</span>
+            </button>
+            <button class="navbar-toggler border-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
+        <div class="collapse navbar-collapse" id="menuNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('todos'); cerrarMenuMobile();">Todas</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('remeras'); cerrarMenuMobile();">Remeras</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('buzos'); cerrarMenuMobile();">Buzos</a></li>
+                <li class="nav-item"><a href="#" class="nav-link px-3" onclick="filtrar('accesorios'); cerrarMenuMobile();">Accesorios</a></li>
+                
+                <li class="nav-item"><a href="#" class="nav-link px-3 text-danger fw-bold" onclick="filtrar('ofertas'); cerrarMenuMobile();">OFERTAS</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="hero-section text-center d-flex align-items-center justify-content-center text-white">
+    <div class="container">
+        <h1 class="display-3 fw-bold">NUEVA COLECCIÓN</h1>
+        <p class="lead">Llevá tu estilo al siguiente nivel con nuestras remeras.</p>
+        <a href="#productos" class="btn btn-primary btn-lg px-5 rounded-pill">Ver Catálogo</a>
+    </div>
+</section>
+
+<main class="container my-5" id="productos-section">
+    <h2 class="text-center mb-4 fw-bold">Nuestros Productos</h2>
+    <div id="productos" class="row g-4">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Cargando catálogo...</p>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="modalCarrito" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Tu Carrito<i class="bi bi-cart4"></i> </h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+                <div class="modal-body">
+    <div id="listaModal" class="mb-4 scroll-carrito"></div>
+
+    <div class="p-3 bg-light rounded-3 mb-4 border">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">Total a pagar:</span>
+            <h4 class="mb-0 text-dark fw-bold">$<span id="totalModal">0</span></h4>
+        </div>
+    </div>
+
+    <div class="form-envio">
+        <h6 class="fw-bold mb-3 text-uppercase small" style="letter-spacing: 1px;">Datos de Entrega</h6>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Nombre Completo</label>
+            <input type="text" id="nombreCliente" class="form-control form-control-lg border-2" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">WhatsApp / Teléfono</label>
+            <input type="tel" id="telefonoCliente" class="form-control form-control-lg border-2" placeholder="Ej: 11 1234 5678">
+        </div>
+        <div class="mb-4">
+            <label class="form-label small fw-bold">Dirección de Envío</label>
+            <input type="text" id="direccionModal" class="form-control form-control-lg border-2" placeholder="Calle, Número, Localidad">
+        </div>
+    </div>
+
+    <button class="btn btn-dark w-100 py-3 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="enviarPedidoWhatsApp()">
+        <span>FINALIZAR COMPRA POR WHATSAPP</span>
+        <span class="fs-5"><i class="bi bi-whatsapp"></i></span>
+    </button>
+</div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-white py-5 mt-5">
+    <div class="container text-center">
+        <h4 class="fw-bold mb-4">STYLEON</h4>
+        <div class="mb-3">
+            <a href="#" class="text-white mx-3 text-decoration-none">Instagram</a>
+            <a href="#" class="text-white mx-3 text-decoration-none">Facebook</a>
+            <a href="#" class="text-white mx-3 text-decoration-none">WhatsApp</a>
+        </div>
+        <hr class="opacity-25">
+        <p class="small text-muted mb-0">&copy; 2024 StyleOn Remeras. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

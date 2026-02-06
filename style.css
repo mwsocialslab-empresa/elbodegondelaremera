@@ -1,0 +1,132 @@
+/* Configuración General */
+* { 
+    font-family: 'Roboto Condensed', sans-serif !important; 
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+/* Header & Nav */
+.marca { 
+    font-size: 1.5rem; 
+    letter-spacing: 2px; 
+    font-weight: 800; 
+}
+
+.btn-cart-nav {
+    border: none;
+    background: none;
+    transition: transform 0.2s;
+}
+
+.btn-cart-nav:hover {
+    transform: scale(1.1);
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                url('https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80');
+    background-size: cover;
+    background-position: center;
+    height: 60vh;
+    margin-bottom: 2rem;
+}
+
+/* Tarjetas de Producto Modernas */
+.producto-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.producto-card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    transform: translateY(-5px);
+}
+
+.img-producto {
+    height: 250px; /* Altura fija para que todas las fotos queden iguales */
+    object-fit: cover; /* Recorta la imagen para llenar el espacio sin deformar */
+    transition: transform 0.5s ease;
+}
+
+.producto-card:hover .img-producto {
+    transform: scale(1.1);
+}
+
+/* Badge de Oferta */
+.badge-oferta {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff3e3e;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Botones */
+.btn-primary { 
+    background-color: #000; 
+    border: none; 
+}
+
+.btn-primary:hover { 
+    background-color: #333; 
+}
+
+.btn-dark {
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* Carrito Modal */
+.scroll-carrito {
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.scroll-carrito::-webkit-scrollbar {
+    width: 5px;
+}
+
+.scroll-carrito::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+}
+/*modal */
+/* Estilos para los Inputs del Modal */
+.form-control-lg {
+    font-size: 0.95rem;
+    border-radius: 10px;
+    transition: all 0.3s border-color;
+}
+
+.form-control:focus {
+    border-color: #000 !important;
+    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Animación para cuando falta un campo (Shake) */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.campo-error {
+    border-color: #dc3545 !important;
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+.form-label {
+    color: #555;
+    margin-bottom: 0.3rem;
+}
