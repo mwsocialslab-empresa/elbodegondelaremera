@@ -12,18 +12,36 @@ body {
     transition: overflow 0.3s;
 }
 
-/* Bloquear scroll cuando el nav móvil está abierto */
 body.menu-open {
     overflow: hidden;
 }
 
 /* =========================================
-   2. HEADER, NAV Y MENÚ MÓVIL
+   2. HEADER Y NAV (CORREGIDO PARA MÓVIL)
    ========================================= */
+.navbar {
+    z-index: 1050 !important; /* Por encima de todo */
+}
+
 .marca { 
     font-size: 1.5rem; 
     letter-spacing: 2px; 
     font-weight: 800; 
+}
+
+/* ELIMINA LA OPACIDAD EN MÓVIL AL SELECCIONAR */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: #ffffff !important; /* Menú siempre blanco */
+        padding: 1.5rem;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .nav-link:active, .nav-link:focus {
+        background-color: transparent !important;
+        color: #000 !important;
+    }
 }
 
 .btn-cart-nav {
@@ -33,11 +51,7 @@ body.menu-open {
     position: relative;
 }
 
-.btn-cart-nav:hover {
-    transform: scale(1.1);
-}
-
-/* Overlay para cerrar el menú al tocar fuera */
+/* OVERLAY (FONDO OSCURO) DETRÁS DEL NAV */
 .menu-overlay {
     position: fixed;
     top: 0;
@@ -45,12 +59,15 @@ body.menu-open {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
-    z-index: 1040;
+    z-index: 1040; /* Por debajo de .navbar */
     display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .menu-overlay.show {
     display: block;
+    opacity: 1;
 }
 
 /* =========================================
@@ -71,7 +88,7 @@ body.menu-open {
 }
 
 /* =========================================
-   4. TARJETAS DE PRODUCTO (CATÁLOGO)
+   4. TARJETAS DE PRODUCTO (ANCHO COMPLETO)
    ========================================= */
 .producto-card {
     display: flex;
@@ -84,30 +101,31 @@ body.menu-open {
     background: white;
 }
 
-.producto-card:hover {
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    transform: translateY(-5px);
-}
-
-/* Mantener proporción cuadrada en imágenes */
 .producto-card .position-relative {
+    width: 100%;
     aspect-ratio: 1 / 1; 
     overflow: hidden;
-    background-color: #f8f9fa;
+    background-color: #fff;
+    display: flex;
 }
 
 .producto-card img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Cubre todo el ancho de la tarjeta */
+    display: block;
     transition: transform 0.5s ease;
+}
+
+.producto-card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    transform: translateY(-5px);
 }
 
 .producto-card:hover img {
     transform: scale(1.05);
 }
 
-/* Títulos alineados (Max 2 líneas) */
 .producto-card h6 {
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -117,36 +135,40 @@ body.menu-open {
     text-overflow: ellipsis;
     min-height: 2.4em; 
     line-height: 1.2em;
-    margin-bottom: 8px;
     font-size: 0.95rem;
 }
 
-.producto-card .card-body {
-    flex-grow: 1;
+/* =========================================
+   5. VISTA DE DETALLE (CORREGIDA)
+   ========================================= */
+#vista-detalle .col-md-6 {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 1rem !important;
 }
 
-/* =========================================
-   5. VISTA DE DETALLE Y SELECTORES
-   ========================================= */
 .contenedor-zoom {
+    width: 100%;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     cursor: crosshair;
     border-radius: 12px;
+    background-color: #fff;
 }
 
 .contenedor-zoom img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Imagen completa a lo ancho */
     transition: transform 0.5s ease;
 }
 
-.contenedor-zoom:hover img {
-    transform: scale(1.2);
+@media (min-width: 992px) {
+    .contenedor-zoom {
+        max-width: 500px;
+        margin: 0 auto;
+    }
 }
 
-/* Botones de talle cuadrados */
 .btn-talle-selector {
     width: 45px;
     height: 45px;
@@ -156,12 +178,8 @@ body.menu-open {
     border: 2px solid #333;
     border-radius: 5px;
     background: white;
-    color: #333;
     font-weight: bold;
-    cursor: pointer;
     transition: all 0.2s ease;
-    margin-right: 8px;
-    margin-bottom: 8px;
 }
 
 .btn-talle-selector.active {
@@ -170,59 +188,19 @@ body.menu-open {
     border-color: #000 !important;
 }
 
-.btn-talle-selector:hover:not(.active) {
-    background-color: #f0f0f0;
-}
-
 /* =========================================
-   6. COMPONENTES DE INTERFAZ (BOTONES, MODALES)
+   6. COMPONENTES Y RESPONSIVO
    ========================================= */
 .btn-primary, .btn-dark { 
     background-color: #000; 
     border: none; 
     border-radius: 8px;
     font-weight: bold;
-    transition: background 0.3s;
-}
-
-.btn-primary:hover, .btn-dark:hover { 
-    background-color: #333; 
-}
-
-/* Inputs del Modal */
-.form-control-lg {
-    font-size: 0.95rem;
-    border-radius: 10px;
-}
-
-.form-control:focus {
-    border-color: #000 !important;
-    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1) !important;
 }
 
 .scroll-carrito {
     max-height: 45vh;
     overflow-y: auto;
-    padding-right: 5px;
-}
-
-.scroll-carrito::-webkit-scrollbar { width: 5px; }
-.scroll-carrito::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
-
-/* =========================================
-   7. VALIDACIONES Y FEEDBACK (TOAST/SHAKE)
-   ========================================= */
-.is-invalid-custom {
-    border: 2px solid #ff4d4d !important;
-    background-color: #fff5f5 !important;
-    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-}
-
-@keyframes shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 .custom-toast {
@@ -234,8 +212,6 @@ body.menu-open {
     color: #fff;
     padding: 12px 25px;
     border-radius: 50px;
-    font-weight: 500;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     z-index: 11000;
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     opacity: 0;
@@ -246,11 +222,13 @@ body.menu-open {
     opacity: 1;
 }
 
-/* =========================================
-   8. AJUSTES RESPONSIVOS
-   ========================================= */
 @media (max-width: 768px) {
     .hero-section { height: 45vh; }
     .marca { font-size: 1.2rem; }
     .btn-talle-selector { width: 40px; height: 40px; }
+    
+    /* Evitar el scroll horizontal */
+    body {
+        overflow-x: hidden;
+    }
 }

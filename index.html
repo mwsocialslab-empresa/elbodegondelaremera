@@ -71,40 +71,37 @@
         </button>
     </nav>
 
-    <div class="row gx-lg-5">
-        <div class="col-12 col-md-5 mb-4">
-            <div class="contenedor-zoom shadow-sm">
-                <img id="detalle-img" src="" alt="Producto">
-            </div>
+        <div class="row gx-lg-5">
+    <div class="col-12 col-md-6 mb-4">
+        <div class="contenedor-zoom shadow-sm">
+            <img id="detalle-img" src="" alt="Producto">
         </div>
+    </div>
 
-        <div class="col-12 col-md-3 mb-4 border-end">
+    <div class="col-12 col-md-6 mb-4">
+        <div class="p-4 bg-white rounded-4 shadow-sm border">
             <h2 id="detalle-nombre" class="fw-bold mb-2"></h2>
             <div id="detalle-precio" class="display-6 fw-bold text-primary mb-4"></div>
             
             <div class="mb-4">
                 <label for="detalle-talle" class="d-block fw-bold text-uppercase small mb-2 text-muted">Elegir Talle</label>
-                <div id="detalle-talle" class="d-flex flex-wrap gap-2">
-                    </div>
+                <div id="detalle-talle" class="d-flex flex-wrap gap-2"></div>
             </div>
 
             <div class="mb-4">
                 <label class="d-block fw-bold text-uppercase small mb-2 text-muted">Cantidad</label>
-                <div class="input-group input-group-lg w-100">
-                    <button class="btn btn-outline-dark" onclick="cambiarCantidadDetalle(-1)">-</button>
+                <div class="input-group input-group-lg w-50"> <button class="btn btn-outline-dark" onclick="cambiarCantidadDetalle(-1)">-</button>
                     <input id="cant-detalle" type="text" class="form-control text-center bg-white" value="1" readonly>
                     <button class="btn btn-outline-dark" onclick="cambiarCantidadDetalle(1)">+</button>
                 </div>
             </div>
 
-            <button id="btn-agregar-detalle" class="btn btn-dark w-100 py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2">
+            <button id="btn-agregar-detalle" class="btn btn-dark w-100 py-3 fw-bold rounded-pill shadow d-flex align-items-center justify-content-center gap-2 mb-5">
                 AÑADIR AL CARRITO <i class="bi bi-bag-plus"></i>
             </button>
-        </div>
 
-        <div class="col-12 col-md-4">
-            <div class="p-4 bg-light rounded-4 h-100">
-                <h5 class="fw-bold text-uppercase small mb-3 border-bottom pb-2">Información del Producto</h5>
+            <div class="pt-4 border-top">
+                <h5 class="fw-bold text-uppercase small mb-3">Información del Producto</h5>
                 <p id="detalle-descripcion" class="text-muted" style="line-height: 1.6;"></p>
                 <div class="mt-4 small">
                     <p class="mb-2"><i class="bi bi-truck text-primary me-2"></i> Envío a todo el país</p>
@@ -113,6 +110,7 @@
             </div>
         </div>
     </div>
+</div>
 </section>
 
 <div class="modal fade" id="modalCarrito" tabindex="-1">
