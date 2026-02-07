@@ -286,3 +286,120 @@ body.menu-open {
         height: 70px !important;
     }
 }
+/* Contenedor del selector de cantidad en el carrito */
+.wrapper-cantidad-carrito {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #e0e0e0; /* Gris muy suave en lugar de negro */
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    height: 32px;
+}
+
+/* Botones de + y - */
+.btn-qty {
+    background: transparent; /* Fondo transparente */
+    color: #333; /* Texto gris oscuro, no negro puro */
+    border: none;
+    width: 32px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.btn-qty:hover {
+    background-color: #f8f9fa;
+    color: #000;
+}
+
+.btn-qty:active {
+    background: #555;
+}
+
+/* El número de la cantidad */
+.qty-num {
+    padding: 0 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    min-width: 30px;
+    text-align: center;
+    color: #333333;
+    border-left: 1px solid #e0e0e0; /* Separadores finos */
+    border-right: 1px solid #e0e0e0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-sm.text-danger {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.btn-sm.text-danger:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* Pequeño efecto al pasar el mouse por el item */
+.item-carrito {
+    transition: background 0.2s;
+}
+
+.item-carrito:hover {
+    background-color: #fdfdfd;
+}
+/* ELIMINA SCROLL HORIZONTAL Y LIMITA EL VERTICAL */
+#modalCarrito .modal-body {
+    overflow-x: hidden !important;
+}
+
+.scroll-carrito {
+    max-height: 400px; /* Limita la altura para que aparezca el scroll vertical */
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+}
+
+/* Estilo para la imagen miniatura (sin afectar el catálogo) */
+.img-mini-carrito {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 5px;
+   
+}
+
+/* Selector de cantidad */
+.wrapper-cantidad-carrito {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #b3a8a8;
+    border-radius: 4px;
+    height: 20px;
+    background: #fff;
+}
+
+.btn-qty {
+    background: #837e7e;
+    color: #fff;
+    border: none;
+    width: 35px;
+    height: 100%;
+    font-weight: bold;
+}
+
+.qty-num {
+    padding: 0 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    min-width: 25px;
+    text-align: center;
+}

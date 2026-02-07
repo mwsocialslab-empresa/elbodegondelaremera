@@ -130,18 +130,17 @@ function agregarDesdeDetalle(prod, cant) {
 
     actualizarCarrito();
     
-    // --- ARREGLO: EL BOTÓN SE LIMPIA EN LA MISMA SECCIÓN ---
     const btn = document.getElementById("btn-agregar-detalle");
     const originalText = 'AÑADIR AL CARRITO <i class="bi bi-cart4"></i>';
     btn.innerHTML = "✅ ¡AGREGADO!";
-    btn.disabled = true; // Evita clics dobles rápidos
+    btn.disabled = true; 
     
     setTimeout(() => {
         btn.innerHTML = originalText;
         btn.disabled = false;
-    }, 1500); // Vuelve a la normalidad tras 1.5 segundos
+    }, 1500); 
 
-
+    //mostrarToast(`Agregado: ${prod.nombre}`);
 }
 
 function actualizarCarrito() {
@@ -153,20 +152,57 @@ function actualizarCarrito() {
     carrito.forEach((p, i) => {
         const sub = p.precio * p.cantidad;
         total += sub; items += p.cantidad;
-        const talleTexto = p.talle === "Único" ? "" : ` - Talle: ${p.talle}`;
+        const talleTexto = p.talle === "Único" ? "" : `Talle: ${p.talle}`;
+        
         html += `
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <div><h6 class="mb-0 fw-bold">${p.nombre}</h6><small>${p.cantidad} unid.${talleTexto}</small></div>
-                <div class="text-end"><div class="fw-bold">$${sub.toLocaleString()}</div>
-                <button class="btn btn-sm text-danger p-0" onclick="eliminarDelCarrito(${i})">Eliminar</button></div>
+            <div class="mb-4 border-bottom pb-3" style="overflow-x: hidden;">
+                <div class="row gx-2 align-items-center">
+                    <div class="col-3">
+                        <img src="${p.imagen}" class="img-mini-carrito shadow-sm">
+                    </div>
+                    <div class="col-9">
+                        <h6 class="mb-0 fw-bold text-uppercase" style="font-size: 0.85rem;">${p.nombre}</h6>
+                        <small class="text-muted">${talleTexto}</small>
+                    </div>
+                </div>
+
+                <div class="row gx-2 align-items-center mt-2">
+                    <div class="col-5">
+                        <div class="wrapper-cantidad-carrito">
+                            <button class="btn-qty" onclick="modificarCantidadCarrito(${i}, -1)">
+                                <i class="bi bi-dash-lg"></i> </button>
+                            <span class="qty-num">${p.cantidad}</span>
+                            <button class="btn-qty" onclick="modificarCantidadCarrito(${i}, 1)">
+                                <i class="bi bi-plus-lg"></i> </button>
+                        </div>
+                    </div>
+                    <div class="col-3 text-center">
+                        <button class="btn btn-sm text-danger fw-bold p-0" style="font-size: 0.65rem;" onclick="eliminarDelCarrito(${i})">ELIMINAR</button>
+                    </div>
+                    <div class="col-4 text-end">
+                        <span class="fw-bold">$${sub.toLocaleString()}</span>
+                    </div>
+                </div>
             </div>`;
     });
 
-    if(listaModal) listaModal.innerHTML = carrito.length === 0 ? "<p class='text-center'>Vacío</p>" : html;
+    if(listaModal) listaModal.innerHTML = carrito.length === 0 ? "<p class='text-center py-4'>Vacío</p>" : html;
     if(totalModal) totalModal.innerText = total.toLocaleString();
     if(contadorNav) {
         contadorNav.innerText = items;
         contadorNav.style.display = items > 0 ? "block" : "none";
+    }
+}
+// --- NUEVA FUNCIÓN: MODIFICAR CANTIDAD DESDE EL CARRITO ---
+function modificarCantidadCarrito(index, cambio) {
+    if (carrito[index]) {
+        carrito[index].cantidad += cambio;
+        // Si la cantidad llega a 0, lo eliminamos
+        if (carrito[index].cantidad <= 0) {
+            eliminarDelCarrito(index);
+        } else {
+            actualizarCarrito();
+        }
     }
 }
 
@@ -323,7 +359,6 @@ function enviarPedidoWhatsApp() {
 function filtrar(categoria) {
     cerrarMenuMobile();
     
-    // --- ARREGLO: "TODAS" AHORA LLAMA A IRALHERO ---
     if (categoria === 'todos') {
         irAlHero();
         return;
@@ -396,7 +431,7 @@ function irAlHero() {
 
     const productosDOM = document.querySelectorAll('.producto');
     productosDOM.forEach(p => {
-    p.style.setProperty('display', 'block', 'important');
+        p.style.setProperty('display', 'block', 'important');
     });
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
