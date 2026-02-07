@@ -272,3 +272,17 @@ body.menu-open {
     border-radius: 50%;   /* Opcional: por si tu logo es circular como el de la imagen */
 }
 
+/* Esto corrige la imagen "rota" o estirada */
+.rounded-circle {
+    object-fit: cover;    /* Recorta la imagen para que llene el círculo sin estirarse */
+    object-position: center; /* Centra el logo dentro del círculo */
+    aspect-ratio: 1 / 1;  /* Fuerza a que el ancho y el alto sean iguales */
+}
+
+/* Ajuste específico para el logo del Nav en móvil */
+@media (max-width: 768px) {
+    .navbar-brand img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+}
