@@ -261,3 +261,14 @@ body.menu-open {
     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
+.navbar-brand {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 1.2rem; /* Ajusta el tamaño si el texto queda muy grande en móviles */
+    letter-spacing: -0.5px;
+}
+
+.navbar-brand img {
+    object-fit: contain; /* Asegura que el logo no se deforme */
+    border-radius: 50%;   /* Opcional: por si tu logo es circular como el de la imagen */
+}
+

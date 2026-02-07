@@ -34,17 +34,24 @@ function renderizarProductos(data) {
             const precio = parseFloat(p.precio) || 0;
             productosGlobal.push({ ...p, precio, categoria });
 
+            const nombreFormateado = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
+
             htmlFinal += `
                 <div class="col-6 col-md-4 col-lg-3 d-flex align-stretch producto" 
                     data-categoria="${categoria.toLowerCase()}">
-                    <div class="card producto-card border-0 shadow-sm w-100" onclick="verDetalle(${index})">
-                        <div class="position-relative">
+                    <div class="card producto-card border-0 shadow-sm w-100">
+                        <div class="position-relative" onclick="verDetalle(${index})">
                             <img src="${p.imagen || 'https://via.placeholder.com/300'}" alt="${p.nombre}" class="img-fluid">
                         </div>
-                        <div class="card-body text-center">
-                            <h6 class="fw-bold mb-1">${p.nombre}</h6>
-                            <div class="mt-auto">
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="fw-bold mb-1 text-start">${nombreFormateado}</h6>
+                            <div class="text-start mb-2">
                                 <span class="fw-bold text-primary fs-5">$${precio.toLocaleString()}</span>
+                            </div>
+                            <div class="mt-auto text-center">
+                                <button class="btn btn-primary btn-sm w-100" onclick="verDetalle(${index})">
+                                    COMPRAR
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -62,6 +69,12 @@ function verDetalle(index) {
     
     productoSeleccionado = { ...p, indexGlobal: index, talleElegido: "" };
 
+    const btnAgregar = document.getElementById("btn-agregar-detalle");
+    if (btnAgregar) {
+        btnAgregar.innerHTML = 'AÑADIR AL CARRITO <i class="bi bi-cart4"></i>';
+        btnAgregar.disabled = false;
+    }
+
     document.getElementById("detalle-img").src = p.imagen;
     document.getElementById("detalle-nombre").innerText = p.nombre;
     document.getElementById("detalle-precio").innerText = `$${p.precio.toLocaleString()}`;
@@ -72,8 +85,12 @@ function verDetalle(index) {
     contenedorTalles.innerHTML = ""; 
     const labelTalle = document.querySelector('label[for="detalle-talle"]');
 
-    if (p.categoria.toLowerCase() !== "accesorios" && p.talle) {
-        if(labelTalle) labelTalle.style.display = "block";
+    const esAccesorio = p.categoria.toLowerCase().includes("accesorio");
+    
+    if (!esAccesorio && p.talle && p.talle.trim() !== "") {
+        if(labelTalle) labelTalle.classList.remove("d-none");
+        contenedorTalles.classList.remove("d-none");
+        
         p.talle.split(",").forEach(t => {
             const btnTalle = document.createElement("button");
             btnTalle.innerText = t.trim();
@@ -86,7 +103,8 @@ function verDetalle(index) {
             contenedorTalles.appendChild(btnTalle);
         });
     } else {
-        if(labelTalle) labelTalle.style.display = "none";
+        if(labelTalle) labelTalle.classList.add("d-none");
+        contenedorTalles.classList.add("d-none");
         productoSeleccionado.talleElegido = "Único";
     }
 
@@ -111,11 +129,19 @@ function agregarDesdeDetalle(prod, cant) {
     existe ? existe.cantidad += cant : carrito.push({ ...prod, talle: talleFinal, cantidad: cant });
 
     actualizarCarrito();
+    
+    // --- ARREGLO: EL BOTÓN SE LIMPIA EN LA MISMA SECCIÓN ---
     const btn = document.getElementById("btn-agregar-detalle");
-    const originalText = btn.innerHTML;
+    const originalText = 'AÑADIR AL CARRITO <i class="bi bi-cart4"></i>';
     btn.innerHTML = "✅ ¡AGREGADO!";
-    setTimeout(() => btn.innerHTML = originalText, 2000);
-    mostrarToast(`Agregado: ${prod.nombre}`);
+    btn.disabled = true; // Evita clics dobles rápidos
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 1500); // Vuelve a la normalidad tras 1.5 segundos
+
+
 }
 
 function actualizarCarrito() {
@@ -127,9 +153,10 @@ function actualizarCarrito() {
     carrito.forEach((p, i) => {
         const sub = p.precio * p.cantidad;
         total += sub; items += p.cantidad;
+        const talleTexto = p.talle === "Único" ? "" : ` - Talle: ${p.talle}`;
         html += `
             <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <div><h6 class="mb-0 fw-bold">${p.nombre}</h6><small>Talle: ${p.talle} x ${p.cantidad}</small></div>
+                <div><h6 class="mb-0 fw-bold">${p.nombre}</h6><small>${p.cantidad} unid.${talleTexto}</small></div>
                 <div class="text-end"><div class="fw-bold">$${sub.toLocaleString()}</div>
                 <button class="btn btn-sm text-danger p-0" onclick="eliminarDelCarrito(${i})">Eliminar</button></div>
             </div>`;
@@ -148,16 +175,8 @@ function eliminarDelCarrito(index) {
     actualizarCarrito();
 }
 
-// --- SOPORTE Y MENÚ ---
-
-/**
- * Función modificada para evitar el zoom molesto en móviles
- * Se añade e.preventDefault() para bloquear el comportamiento de doble tap del navegador
- */
 function cambiarCantidadDetalle(v, event) {
-    if (event) {
-        event.preventDefault(); // Evita que el navegador haga zoom al clickear rápido
-    }
+    if (event) { event.preventDefault(); }
     const input = document.getElementById("cant-detalle");
     input.value = Math.max(1, (parseInt(input.value) || 1) + v);
 }
@@ -170,14 +189,11 @@ function intentarAbrirCarrito() {
 function mostrarToast(mensaje) {
     const toastExistente = document.querySelector('.custom-toast');
     if (toastExistente) toastExistente.remove();
-
     const toast = document.createElement('div');
     toast.className = "custom-toast";
     toast.innerHTML = mensaje; 
     document.body.appendChild(toast);
-
     setTimeout(() => toast.classList.add('show'), 50);
-
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 500);
@@ -227,22 +243,21 @@ function enviarPedidoWhatsApp() {
         return;
     }
 
-    if (carrito.length === 0) {
-        mostrarToast("🛒 El carrito está vacío");
+    const soloNumeros = /^[0-9]+$/;
+    if (!soloNumeros.test(inputTelefono.value.trim())) {
+        inputTelefono.classList.add('is-invalid-custom');
+        mostrarToast("❌ El teléfono solo debe contener números");
         return;
     }
+
+    if (carrito.length === 0) return;
 
     let totalAcumulado = 0;
     carrito.forEach(p => totalAcumulado += (p.precio * p.cantidad));
 
-    const montoMinimo = 45000;
-    if (totalAcumulado < montoMinimo) {
-        mostrarToast(`❌ La compra mínima es de $${montoMinimo.toLocaleString()}`);
-        return;
-    }
-
     const numeroPedido = obtenerSiguientePedido(); 
     const fechaPedido = new Date().toLocaleString('es-AR');
+    
     const aliasMP = "walter30mp";
     const linkApp = "https://link.mercadopago.com.ar/home";
 
@@ -252,7 +267,8 @@ function enviarPedidoWhatsApp() {
     msg += `--------------------------\n`;
     
     carrito.forEach(p => {
-        msg += `✅ ${p.cantidad}x - ${p.nombre.toUpperCase()} (${p.talle})\n`;
+        const talleMsg = p.talle === "Único" ? "" : ` (${p.talle})`;
+        msg += `✅ ${p.cantidad}x - ${p.nombre.toUpperCase()}${talleMsg}\n`;
     });
     
     msg += `--------------------------\n`;
@@ -283,8 +299,8 @@ function enviarPedidoWhatsApp() {
     });
 
     const whatsappUrl = `https://wa.me/5491127461954?text=${encodeURIComponent(msg)}`;
-    const btn = document.querySelector(".btn-dark[onclick='enviarPedidoWhatsApp()']");
     
+    const btn = document.querySelector(".btn-dark[onclick='enviarPedidoWhatsApp()']");
     if(btn) {
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
@@ -304,9 +320,15 @@ function enviarPedidoWhatsApp() {
     }, 800);
 }
 
-// --- NAVEGACIÓN Y FILTROS ---
 function filtrar(categoria) {
     cerrarMenuMobile();
+    
+    // --- ARREGLO: "TODAS" AHORA LLAMA A IRALHERO ---
+    if (categoria === 'todos') {
+        irAlHero();
+        return;
+    }
+
     const hero = document.getElementById("hero");
     const catalogo = document.getElementById("contenedor-catalogo");
     const detalle = document.getElementById("vista-detalle");
@@ -318,7 +340,7 @@ function filtrar(categoria) {
     const productosDOM = document.querySelectorAll('.producto');
     productosDOM.forEach(p => {
         const catProd = p.getAttribute('data-categoria');
-        if (categoria === 'todos' || catProd === categoria.toLowerCase()) {
+        if (catProd === categoria.toLowerCase()) {
             p.style.setProperty('display', 'block', 'important');
         } else {
             p.style.setProperty('display', 'none', 'important');
@@ -336,24 +358,10 @@ function filtrar(categoria) {
     }, 150);
 }
 
-function irAlHero() {
-    cerrarMenuMobile();
-    const hero = document.getElementById("hero");
-    const catalogo = document.getElementById("contenedor-catalogo");
-    const detalle = document.getElementById("vista-detalle");
-
-    if (hero) hero.classList.remove("d-none");
-    if (catalogo) catalogo.classList.remove("d-none");
-    if (detalle) detalle.classList.add("d-none");
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
 function volverAlCatalogo() {
     const hero = document.getElementById("hero");
     const catalogo = document.getElementById("contenedor-catalogo");
     const detalle = document.getElementById("vista-detalle");
-
     if (hero) hero.classList.remove("d-none");
     if (catalogo) catalogo.classList.remove("d-none");
     if (detalle) detalle.classList.add("d-none");
@@ -363,14 +371,7 @@ function cerrarMenuMobile() {
     const nav = document.getElementById('menuNav');
     if (nav && nav.classList.contains('show')) {
         const bCollapse = bootstrap.Collapse.getInstance(nav);
-        if (bCollapse) {
-            bCollapse.hide();
-        } else {
-            nav.classList.remove('show');
-            document.body.classList.remove('menu-open');
-            const overlay = document.querySelector('.menu-overlay');
-            if(overlay) overlay.classList.remove('show');
-        }
+        if (bCollapse) bCollapse.hide();
     }
 }
 
@@ -381,4 +382,22 @@ function obtenerSiguientePedido() {
     let parteIzquierda = Math.floor(siguienteNum / 10000).toString().padStart(3, '0');
     let parteDerecha = (siguienteNum % 10000).toString().padStart(4, '0');
     return `${parteIzquierda}-${parteDerecha}`;
+}
+
+function irAlHero() {
+    cerrarMenuMobile();
+    const hero = document.getElementById("hero");
+    const catalogo = document.getElementById("contenedor-catalogo");
+    const detalle = document.getElementById("vista-detalle");
+
+    if (hero) hero.classList.remove("d-none");
+    if (catalogo) catalogo.classList.remove("d-none");
+    if (detalle) detalle.classList.add("d-none");
+
+    const productosDOM = document.querySelectorAll('.producto');
+    productosDOM.forEach(p => {
+    p.style.setProperty('display', 'block', 'important');
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
