@@ -35,7 +35,7 @@ function renderizarProductos(data) {
             productosGlobal.push({ ...p, precio, categoria });
 
             htmlFinal += `
-                <div class="col-6 col-md-4 col-lg-3 d-flex align-items-stretch producto" 
+                <div class="col-6 col-md-4 col-lg-3 d-flex align-stretch producto" 
                     data-categoria="${categoria.toLowerCase()}">
                     <div class="card producto-card border-0 shadow-sm w-100" onclick="verDetalle(${index})">
                         <div class="position-relative">
@@ -148,35 +148,16 @@ function eliminarDelCarrito(index) {
     actualizarCarrito();
 }
 
-// --- NAVEGACIÓN Y FILTROS (ARREGLADO) ---
-function filtrar(categoria) {
-    volverAlCatalogo();
-    const productosDOM = document.querySelectorAll('.producto');
-    
-    productosDOM.forEach(p => {
-        const catProd = p.getAttribute('data-categoria');
-        if (categoria === 'todos' || catProd === categoria.toLowerCase()) {
-            p.style.display = 'block';
-        } else {
-            p.style.display = 'none';
-        }
-    });
-
-    const section = document.getElementById("productos-section");
-    if(section) {
-        const yOffset = -110;
-        const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-    cerrarMenuMobile();
-}
-
-function irAlCatalogo() {
-    filtrar('todos');
-}
-
 // --- SOPORTE Y MENÚ ---
-function cambiarCantidadDetalle(v) {
+
+/**
+ * Función modificada para evitar el zoom molesto en móviles
+ * Se añade e.preventDefault() para bloquear el comportamiento de doble tap del navegador
+ */
+function cambiarCantidadDetalle(v, event) {
+    if (event) {
+        event.preventDefault(); // Evita que el navegador haga zoom al clickear rápido
+    }
     const input = document.getElementById("cant-detalle");
     input.value = Math.max(1, (parseInt(input.value) || 1) + v);
 }
@@ -187,19 +168,16 @@ function intentarAbrirCarrito() {
 }
 
 function mostrarToast(mensaje) {
-    // Eliminar toast anterior si existe para que no se encimen
     const toastExistente = document.querySelector('.custom-toast');
     if (toastExistente) toastExistente.remove();
 
     const toast = document.createElement('div');
     toast.className = "custom-toast";
-    toast.innerHTML = mensaje; // Usamos innerHTML por si quieres poner iconos
+    toast.innerHTML = mensaje; 
     document.body.appendChild(toast);
 
-    // Pequeño delay para que la animación funcione
     setTimeout(() => toast.classList.add('show'), 50);
 
-    // Desaparecer después de 3 segundos
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 500);
@@ -230,20 +208,15 @@ function enviarPedidoWhatsApp() {
     const inputTelefono = document.getElementById('telefonoCliente');
     const inputDireccion = document.getElementById('direccionModal');
     
-    // 1. VALIDACIÓN DE CAMPOS (RESALTE EN ROJO)
     const campos = [inputNombre, inputTelefono, inputDireccion];
     let faltaDato = false;
 
     campos.forEach(campo => {
-        // Quitamos el error previo si existe
         campo.classList.remove('is-invalid-custom');
-        
         if (!campo.value.trim()) {
-            campo.classList.add('is-invalid-custom'); // Agrega borde rojo y vibración
+            campo.classList.add('is-invalid-custom'); 
             faltaDato = true;
         }
-
-        // Quitar el resaltado rojo apenas el usuario empiece a escribir
         campo.oninput = () => {
             campo.classList.remove('is-invalid-custom');
         };
@@ -254,13 +227,11 @@ function enviarPedidoWhatsApp() {
         return;
     }
 
-    // 2. VALIDACIÓN DE CARRITO VACÍO
     if (carrito.length === 0) {
         mostrarToast("🛒 El carrito está vacío");
         return;
     }
 
-    // 3. CALCULAR TOTAL Y VALIDACIÓN DE MONTO MÍNIMO
     let totalAcumulado = 0;
     carrito.forEach(p => totalAcumulado += (p.precio * p.cantidad));
 
@@ -270,13 +241,11 @@ function enviarPedidoWhatsApp() {
         return;
     }
 
-    // 4. GENERACIÓN DE NÚMERO CORRELATIVO (000-0000)
     const numeroPedido = obtenerSiguientePedido(); 
     const fechaPedido = new Date().toLocaleString('es-AR');
     const aliasMP = "walter30mp";
     const linkApp = "https://link.mercadopago.com.ar/home";
 
-    // 5. CONSTRUCCIÓN DEL MENSAJE (EMOJIS COMPATIBLES)
     let msg = `👋 ¡Hola! Soy *${inputNombre.value.trim()}*.\n\n`;
     msg += `📦 *PEDIDO N° ${numeroPedido}*\n`;
     msg += `📅 ${fechaPedido}\n`;
@@ -298,7 +267,6 @@ function enviarPedidoWhatsApp() {
     msg += `📸 *No olvides mandar el comprobante de pago*\n`;
     msg += `🙏 ¡Muchas gracias por tu compra!`;
 
-    // 6. ENVÍO DE DATOS A GOOGLE SHEETS
     fetch(URL_SHEETS, {
         method: 'POST',
         mode: 'no-cors',
@@ -314,7 +282,6 @@ function enviarPedidoWhatsApp() {
         })
     });
 
-    // 7. GESTIÓN DEL BOTÓN Y REDIRECCIÓN
     const whatsappUrl = `https://wa.me/5491127461954?text=${encodeURIComponent(msg)}`;
     const btn = document.querySelector(".btn-dark[onclick='enviarPedidoWhatsApp()']");
     
@@ -324,19 +291,12 @@ function enviarPedidoWhatsApp() {
     }
 
     setTimeout(() => {
-        // Abre WhatsApp en una pestaña nueva
         window.open(whatsappUrl, '_blank'); 
-        
-        // Limpiar estado de la tienda
         carrito = [];
         actualizarCarrito();
-        
-        // Cerrar el modal de compra
         const modalElt = document.getElementById('modalCarrito');
         const modalInst = bootstrap.Modal.getInstance(modalElt);
         if (modalInst) modalInst.hide();
-        
-        // Restaurar el botón original
         if(btn) {
             btn.disabled = false;
             btn.innerHTML = 'FINALIZAR COMPRA POR WHATSAPP <i class="bi bi-whatsapp"></i>';
@@ -344,23 +304,9 @@ function enviarPedidoWhatsApp() {
     }, 800);
 }
 
-// FUNCIÓN AUXILIAR PARA EL CONTADOR (Por si no la tenías a mano)
-function obtenerSiguientePedido() {
-    let ultimoNum = localStorage.getItem('contadorPedido') || 0;
-    let siguienteNum = parseInt(ultimoNum) + 1;
-    localStorage.setItem('contadorPedido', siguienteNum);
-    
-    let parteIzquierda = Math.floor(siguienteNum / 10000).toString().padStart(3, '0');
-    let parteDerecha = (siguienteNum % 10000).toString().padStart(4, '0');
-    
-    return `${parteIzquierda}-${parteDerecha}`;
-}
-// --- NAVEGACIÓN Y FILTROS (VERSIÓN DEFINITIVA) ---
+// --- NAVEGACIÓN Y FILTROS ---
 function filtrar(categoria) {
-    // 1. Forzar cierre de cualquier menú abierto inmediatamente
     cerrarMenuMobile();
-
-    // 2. Mostrar catálogo y ocultar detalle (asegura que los elementos existan en el DOM)
     const hero = document.getElementById("hero");
     const catalogo = document.getElementById("contenedor-catalogo");
     const detalle = document.getElementById("vista-detalle");
@@ -369,7 +315,6 @@ function filtrar(categoria) {
     if (catalogo) catalogo.classList.remove("d-none");
     if (detalle) detalle.classList.add("d-none");
 
-    // 3. Filtrar los productos
     const productosDOM = document.querySelectorAll('.producto');
     productosDOM.forEach(p => {
         const catProd = p.getAttribute('data-categoria');
@@ -380,18 +325,13 @@ function filtrar(categoria) {
         }
     });
 
-    // 4. Scroll forzado con un pequeño retraso para que el navegador procese el cambio de D-NONE
     setTimeout(() => {
         const section = document.getElementById("productos-section");
         if (section) {
             const headerOffset = 100;
             const elementPosition = section.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: "smooth"
-            });
+            window.scrollTo({ top: offsetPosition, behavior: "smooth" });
         }
     }, 150);
 }
@@ -417,11 +357,8 @@ function volverAlCatalogo() {
     if (hero) hero.classList.remove("d-none");
     if (catalogo) catalogo.classList.remove("d-none");
     if (detalle) detalle.classList.add("d-none");
-    
-    // Al volver al catálogo, no hacemos scroll arriba para no perder la posición
 }
 
-// Reemplazá también esta función para que sea más robusta
 function cerrarMenuMobile() {
     const nav = document.getElementById('menuNav');
     if (nav && nav.classList.contains('show')) {
@@ -429,7 +366,6 @@ function cerrarMenuMobile() {
         if (bCollapse) {
             bCollapse.hide();
         } else {
-            // Si no hay instancia, lo cerramos a mano
             nav.classList.remove('show');
             document.body.classList.remove('menu-open');
             const overlay = document.querySelector('.menu-overlay');
@@ -437,18 +373,12 @@ function cerrarMenuMobile() {
         }
     }
 }
+
 function obtenerSiguientePedido() {
-    // 1. Obtener el último número guardado (o empezar en 1)
     let ultimoNum = localStorage.getItem('contadorPedido') || 0;
     let siguienteNum = parseInt(ultimoNum) + 1;
-    
-    // 2. Guardar el nuevo número para la próxima vez
     localStorage.setItem('contadorPedido', siguienteNum);
-    
-    // 3. Formatear a 000-0000
-    // Dividimos por 10000 para obtener la parte izquierda y derecha
     let parteIzquierda = Math.floor(siguienteNum / 10000).toString().padStart(3, '0');
     let parteDerecha = (siguienteNum % 10000).toString().padStart(4, '0');
-    
     return `${parteIzquierda}-${parteDerecha}`;
 }
