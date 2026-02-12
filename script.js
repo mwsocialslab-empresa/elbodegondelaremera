@@ -1,4 +1,4 @@
-const URL_SHEETS = "https://script.google.com/macros/s/AKfycbzb_I--xAIvRja1jJJwPfert2zgLEUScpqQ4rTEU0yIdjKpnQDIGQzbKfNdqX8BOwC_/exec";
+const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxWcPxS19UZ_hJCEqiZQn4Pp39f_k1sAMSvgOiMSrT9zZbSR8_mOIX6SQslpVqyOBGr/exec";
 let carrito = [];
 let productosGlobal = [];
 let productoSeleccionado = null;
@@ -31,22 +31,38 @@ function renderizarProductos(data) {
 
     for (const categoria in data) {
         data[categoria].forEach(p => {
-            const precio = parseFloat(p.precio) || 0;
-            productosGlobal.push({ ...p, precio, categoria });
+            // Sincronización con las nuevas columnas del Excel
+            const precioNormal = parseFloat(p.precio) || 0;
+            const precioOferta = parseFloat(p.precioOferta) || 0;
+            
+            // Guardamos ambos precios para que verDetalle funcione
+            productosGlobal.push({ ...p, precio: precioNormal, precioOferta, categoria });
 
             const nombreFormateado = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
+
+            // Lógica de Oferta
+            const tieneOferta = precioOferta > 0;
+            const badgeOferta = tieneOferta 
+                ? `<span class="position-absolute top-0 start-0 badge rounded-pill bg-danger m-2" style="z-index: 10;">OFERTA</span>` 
+                : "";
+
+            const preciosHTML = tieneOferta 
+                ? `<span class="fw-bold text-primary fs-5">$${precioOferta.toLocaleString()}</span>
+                   <span class="text-muted text-decoration-line-through small ms-1">$${precioNormal.toLocaleString()}</span>`
+                : `<span class="fw-bold text-primary fs-5">$${precioNormal.toLocaleString()}</span>`;
 
             htmlFinal += `
                 <div class="col-6 col-md-4 col-lg-3 d-flex align-stretch producto" 
                     data-categoria="${categoria.toLowerCase()}">
-                    <div class="card producto-card border-0 shadow-sm w-100">
-                        <div class="position-relative" onclick="verDetalle(${index})">
-                            <img src="${p.imagen || 'https://via.placeholder.com/300'}" alt="${p.nombre}" class="img-fluid">
+                    <div class="card producto-card border-0 shadow-sm w-100 position-relative">
+                        ${badgeOferta}
+                        <div class="position-relative" onclick="verDetalle(${index})" style="cursor:pointer">
+                            <img src="${p.imagen || 'https://placeholder.co/300'}" alt="${p.nombre}" class="img-fluid"> 
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h6 class="fw-bold mb-1 text-start">${nombreFormateado}</h6>
                             <div class="text-start mb-2">
-                                <span class="fw-bold text-primary fs-5">$${precio.toLocaleString()}</span>
+                                ${preciosHTML}
                             </div>
                             <div class="mt-auto text-center">
                                 <button class="btn btn-primary btn-sm w-100" onclick="verDetalle(${index})">
@@ -67,7 +83,9 @@ function verDetalle(index) {
     const p = productosGlobal[index];
     if (!p) return;
     
-    productoSeleccionado = { ...p, indexGlobal: index, talleElegido: "" };
+    // El precio de venta real será el de oferta si existe, sino el normal
+    const precioVenta = (p.precioOferta && p.precioOferta > 0) ? p.precioOferta : p.precio;
+    productoSeleccionado = { ...p, indexGlobal: index, talleElegido: "", precioFinal: precioVenta };
 
     const btnAgregar = document.getElementById("btn-agregar-detalle");
     if (btnAgregar) {
@@ -75,9 +93,22 @@ function verDetalle(index) {
         btnAgregar.disabled = false;
     }
 
-    document.getElementById("detalle-img").src = p.imagen;
+    // Aseguramos que cargue la imagen de la columna F mapeada en el Apps Script
+
+    document.getElementById("detalle-img").src = p.imagen || 'https://placeholder.co/300';
     document.getElementById("detalle-nombre").innerText = p.nombre;
-    document.getElementById("detalle-precio").innerText = `$${p.precio.toLocaleString()}`;
+    
+    // Lógica para mostrar precio de oferta en el detalle
+    const contenedorPrecio = document.getElementById("detalle-precio");
+    if (p.precioOferta && p.precioOferta > 0) {
+        contenedorPrecio.innerHTML = `
+            <span class="text-primary fw-bold">$${p.precioOferta.toLocaleString()}</span>
+            <span class="text-muted fs-5 text-decoration-line-through ms-3">$${p.precio.toLocaleString()}</span>
+        `;
+    } else {
+        contenedorPrecio.innerText = `$${p.precio.toLocaleString()}`;
+    }
+
     document.getElementById("detalle-descripcion").innerText = p.detalle || 'Sin descripción disponible.';
     document.getElementById("cant-detalle").value = 1;
 
