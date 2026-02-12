@@ -27,45 +27,55 @@ function renderizarProductos(data) {
     
     let htmlFinal = ""; 
     let index = 0;
-    productosGlobal = [];
+    productosGlobal = []; 
 
     for (const categoria in data) {
         data[categoria].forEach(p => {
-            // Sincronización con las nuevas columnas del Excel
             const precioNormal = parseFloat(p.precio) || 0;
             const precioOferta = parseFloat(p.precioOferta) || 0;
+            const nombreCat = categoria.toLowerCase();
             
-            // Guardamos ambos precios para que verDetalle funcione
+            // Si el precio de oferta es mayor a 0, o si el producto VIENE de la hoja "ofertas"
+            const tieneOferta = precioOferta > 0 || nombreCat === 'ofertas';
+
+            // Guardamos el producto
             productosGlobal.push({ ...p, precio: precioNormal, precioOferta, categoria });
 
             const nombreFormateado = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
+            
+            // Asignamos categorías: su nombre de hoja + "ofertas" si corresponde
+            let categoriasData = nombreCat;
+            if (tieneOferta) {
+                categoriasData += " ofertas";
+            }
 
-            // Lógica de Oferta
-            const tieneOferta = precioOferta > 0;
             const badgeOferta = tieneOferta 
                 ? `<span class="position-absolute top-0 start-0 badge rounded-pill bg-danger m-2" style="z-index: 10;">OFERTA</span>` 
                 : "";
 
-            const preciosHTML = tieneOferta 
+            // Mostramos el precio de oferta si existe, sino el normal
+            const precioAMostrar = (precioOferta > 0) ? precioOferta : precioNormal;
+            
+            const preciosHTML = (precioOferta > 0)
                 ? `<span class="fw-bold text-primary fs-5">$${precioOferta.toLocaleString()}</span>
                    <span class="text-muted text-decoration-line-through small ms-1">$${precioNormal.toLocaleString()}</span>`
                 : `<span class="fw-bold text-primary fs-5">$${precioNormal.toLocaleString()}</span>`;
 
             htmlFinal += `
                 <div class="col-6 col-md-4 col-lg-3 d-flex align-stretch producto" 
-                    data-categoria="${categoria.toLowerCase()}">
+                    data-categoria="${categoriasData}">
                     <div class="card producto-card border-0 shadow-sm w-100 position-relative">
                         ${badgeOferta}
                         <div class="position-relative" onclick="verDetalle(${index})" style="cursor:pointer">
-                            <img src="${p.imagen || 'https://placeholder.co/300'}" alt="${p.nombre}" class="img-fluid"> 
+                            <img src="${p.imagen || 'https://placeholder.co/300'}" alt="${p.nombre}" class="img-fluid">
                         </div>
-                        <div class="card-body d-flex flex-column">
-                            <h6 class="fw-bold mb-1 text-start">${nombreFormateado}</h6>
+                        <div class="card-body d-flex flex-column p-2">
+                            <h6 class="fw-bold mb-1 text-start" style="font-size: 0.85rem;">${nombreFormateado}</h6>
                             <div class="text-start mb-2">
                                 ${preciosHTML}
                             </div>
                             <div class="mt-auto text-center">
-                                <button class="btn btn-primary btn-sm w-100" onclick="verDetalle(${index})">
+                                <button class="btn btn-dark btn-sm w-100 rounded-pill fw-bold" onclick="verDetalle(${index})">
                                     COMPRAR
                                 </button>
                             </div>
@@ -77,7 +87,6 @@ function renderizarProductos(data) {
     }
     contenedor.innerHTML = htmlFinal;
 }
-
 // --- VISTA DE DETALLE ---
 function verDetalle(index) {
     const p = productosGlobal[index];
@@ -93,7 +102,20 @@ function verDetalle(index) {
         btnAgregar.disabled = false;
     }
 
-    // Aseguramos que cargue la imagen de la columna F mapeada en el Apps Script
+    // --- NUEVA LÓGICA PARA EL BADGE EN DETALLE ---
+    const tieneOferta = (p.precioOferta && p.precioOferta > 0) || p.categoria.toLowerCase() === 'ofertas';
+    const contenedorImagen = document.querySelector(".detalle-img-contenedor") || document.getElementById("detalle-img").parentElement;
+    
+    // Si ya existe un badge viejo, lo borramos para no duplicar
+    const badgeViejo = contenedorImagen.querySelector(".badge-oferta-detalle");
+    if (badgeViejo) badgeViejo.remove();
+
+    if (tieneOferta) {
+        const badgeHTML = `<span class="badge-oferta-detalle position-absolute top-0 start-0 badge rounded-pill bg-danger m-3" style="z-index: 10; font-size: 1rem;">OFERTA</span>`;
+        contenedorImagen.classList.add("position-relative"); // Nos aseguramos de que el contenedor sea relativo
+        contenedorImagen.insertAdjacentHTML('beforeend', badgeHTML);
+    }
+    // ----------------------------------------------
 
     document.getElementById("detalle-img").src = p.imagen || 'https://placeholder.co/300';
     document.getElementById("detalle-nombre").innerText = p.nombre;
@@ -157,7 +179,12 @@ function verDetalle(index) {
 function agregarDesdeDetalle(prod, cant) {
     const talleFinal = prod.talleElegido;
     const existe = carrito.find(p => p.nombre === prod.nombre && p.talle === talleFinal);
-    existe ? existe.cantidad += cant : carrito.push({ ...prod, talle: talleFinal, cantidad: cant });
+    
+    // Calculamos si tiene oferta antes de guardar
+    const tieneOferta = (prod.precioOferta && prod.precioOferta > 0) || prod.categoria.toLowerCase() === 'ofertas';
+
+    // Agregamos el producto con la propiedad tieneOferta para que el carrito la reconozca
+    existe ? existe.cantidad += cant : carrito.push({ ...prod, talle: talleFinal, cantidad: cant, tieneOferta: tieneOferta });
 
     actualizarCarrito();
     
@@ -181,15 +208,26 @@ function actualizarCarrito() {
     let html = "", total = 0, items = 0;
 
     carrito.forEach((p, i) => {
-        const sub = p.precio * p.cantidad;
-        total += sub; items += p.cantidad;
+        // Determinamos el precio real a cobrar (oferta o normal)
+        const precioReal = (p.precioOferta && p.precioOferta > 0) ? p.precioOferta : p.precio;
+        const sub = precioReal * p.cantidad;
+        
+        total += sub; 
+        items += p.cantidad;
+        
         const talleTexto = p.talle === "Único" ? "" : `Talle: ${p.talle}`;
+        
+        // --- Badge de oferta para la miniatura ---
+        const badgeOfertaCarrito = p.tieneOferta 
+            ? `<span class="badge bg-danger position-absolute" style="font-size: 0.5rem; top: -5px; left: -5px; z-index: 10; padding: 2px 5px;">OFERTA</span>` 
+            : "";
         
         html += `
             <div class="mb-4 border-bottom pb-3" style="overflow-x: hidden;">
                 <div class="row gx-2 align-items-center">
-                    <div class="col-3">
-                        <img src="${p.imagen}" class="img-mini-carrito shadow-sm">
+                    <div class="col-3 position-relative">
+                        ${badgeOfertaCarrito}
+                        <img src="${p.imagen}" class="img-mini-carrito shadow-sm" style="width: 100%; border-radius: 4px;">
                     </div>
                     <div class="col-9">
                         <h6 class="mb-0 fw-bold text-uppercase" style="font-size: 0.85rem;">${p.nombre}</h6>
@@ -325,7 +363,7 @@ function enviarPedidoWhatsApp() {
     const numeroPedido = obtenerSiguientePedido(); 
     const fechaPedido = new Date().toLocaleString('es-AR');
     
-    const aliasMP = "walter30mp";
+    const aliasMP = "Alias-Ejemplo";
     const linkApp = "https://link.mercadopago.com.ar/home";
 
     let msg = `👋 ¡Hola! Soy *${inputNombre.value.trim()}*.\n\n`;
@@ -405,8 +443,9 @@ function filtrar(categoria) {
 
     const productosDOM = document.querySelectorAll('.producto');
     productosDOM.forEach(p => {
-        const catProd = p.getAttribute('data-categoria');
-        if (catProd === categoria.toLowerCase()) {
+        const catProd = p.getAttribute('data-categoria').toLowerCase();
+        // CAMBIO AQUÍ: Ahora verifica si la categoría buscada está dentro del atributo
+        if (catProd.includes(categoria.toLowerCase())) {
             p.style.setProperty('display', 'block', 'important');
         } else {
             p.style.setProperty('display', 'none', 'important');
